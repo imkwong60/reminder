@@ -457,8 +457,8 @@
         if (!subscription) {
           subscription = await reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-          });
+            applicationServerKey: urlBase64ToUint8Array("BNtUxRU1oQ_pfnfos06sCxB-wXRAXzd0NuNIm26mv7NQWpAbE8KwBTsBmRQowb1lE-aPVUQ6GiYzVb_F__u30Do"),
+          })
         }
 
         const json = subscription.toJSON();
