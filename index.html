@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#e94560" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>提醒本本</title>
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --accent: #e94560;
+      --accent-soft: #ff6b8a;
+      --text: #eaeaea;
+      --muted: #a0a0b8;
+      --success: #4ade80;
+      --border: #2a2a40;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding: 16px;
+      padding-bottom: 100px;
+      line-height: 1.5;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header .sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #12121f;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row > * {
+      flex: 1;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #2a2a40;
+      color: var(--text);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: #f87171;
+      border: 1px solid #f8717133;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+
+    .reminder-item {
+      background: #12121f;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .reminder-item.inactive {
+      opacity: 0.55;
+    }
+
+    .reminder-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .reminder-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .reminder-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #333;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle.on {
+      background: var(--success);
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle.on::after {
+      transform: translateX(20px);
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: #2a2a40;
+    }
+
+    .badge.ok {
+      background: #14532d44;
+      color: var(--success);
+    }
+
+    .badge.warn {
+      background: #7c2d1244;
+      color: #fb923c;
+    }
+
+    /* Floating Capsule / Pill Toast */
+    #toast-container {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      width: max-content;
+      max-width: 90vw;
+    }
+
+    .toast {
+      background: #1f1f35;
+      color: white;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      border: 1px solid #3a3a55;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .toast.success { border-color: #4ade8055; }
+    .toast.error { border-color: #f8717155; }
+
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty img {
+      width: 80px;
+      opacity: 0.6;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.75rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="Kumamon" />
+    <div>
+      <h1>提醒本本</h1>
+      <div class="sub">個人推送提醒 · 分鐘 / 小時 / 天</div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div id="push-status" class="badge warn">推送：未啟用</div>
+    <button id="btn-enable-push" class="btn-secondary btn-sm">啟用推送通知</button>
+  </div>
+
+  <!-- 新增提醒 -->
+  <div class="card">
+    <h2>＋ 新增提醒</h2>
+    <label>標題</label>
+    <input id="title" type="text" placeholder="例如：喝水、休息眼睛、吃藥…" maxlength="80" />
+
+    <label>補充說明（可選）</label>
+    <input id="body" type="text" placeholder="可留空" maxlength="120" />
+
+    <div class="row">
+      <div>
+        <label>每隔</label>
+        <input id="interval-value" type="number" min="1" value="30" />
+      </div>
+      <div>
+        <label>單位</label>
+        <select id="interval-type">
+          <option value="minutes">分鐘</option>
+          <option value="hours">小時</option>
+          <option value="days">天</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="btn-add" class="btn-primary">加入提醒</button>
+  </div>
+
+  <!-- 提醒列表 -->
+  <div class="card">
+    <h2>📋 我的提醒</h2>
+    <div id="list">
+      <div class="empty">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="" />
+        <div>還沒有任何提醒<br>先新增一個吧！</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>提醒本本 · 個人使用 · 資料存於你的 Supabase</footer>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    // ========== 設定 ==========
+    const SUPABASE_URL = "https://xmbxdhlczolshrdxbwnm.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtYnhkaGxjem9sc2hyZHhid25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MDI4NDQsImV4cCI6MjEwMjI3ODg0NH0.T9jdhxDoeHLCJePpV--aexc69gGSJj3BeItLNcZMzK8";
+    const VAPID_PUBLIC_KEY = "BNtUxRU1oQ_pfnfos06sCxB-wXRAXzd0NuNIm26mv7NQWpAbE8KwBTsBmRQowb1lE-aPVUQ6GiYzVb_F__u30Do";
+
+    // ========== Supabase ==========
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ========== Toast (Floating Capsule) ==========
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      el.className = `toast ${type}`;
+      el.innerHTML = type === "success" ? `✓ ${message}` : `⚠ ${message}`;
+      container.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("show"));
+      setTimeout(() => {
+        el.classList.remove("show");
+        setTimeout(() => el.remove(), 350);
+      }, 2600);
+    }
+
+    // ========== Helpers ==========
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    function formatInterval(type, value) {
+      const map = { minutes: "分鐘", hours: "小時", days: "天" };
+      return `每 ${value} ${map[type]}`;
+    }
+
+    function formatTime(iso) {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      return d.toLocaleString("zh-HK", {
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    // ========== Push ==========
+    async function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) return null;
+      try {
+        const reg = await navigator.serviceWorker.register("./sw.js");
+        return reg;
+      } catch (e) {
+        console.error("SW register failed", e);
+        return null;
+      }
+    }
+
+    async function enablePush() {
+      if (!("Notification" in window) || !("PushManager" in window)) {
+        showToast("此瀏覽器不支援推送通知", "error");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        showToast("需要允許通知權限", "error");
+        return;
+      }
+
+      const reg = await registerServiceWorker();
+      if (!reg) {
+        showToast("Service Worker 註冊失敗", "error");
+        return;
+      }
+
+      try {
+        let subscription = await reg.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+        }
+
+        const json = subscription.toJSON();
+        const { error } = await supabase.from("push_subscriptions").upsert(
+          {
+            endpoint: json.endpoint,
+            p256dh: json.keys.p256dh,
+            auth: json.keys.auth,
+            user_agent: navigator.userAgent,
+          },
+          { onConflict: "endpoint" }
+        );
+
+        if (error) throw error;
+
+        updatePushStatus(true);
+        showToast("推送通知已啟用");
+      } catch (e) {
+        console.error(e);
+        showToast("啟用失敗：" + (e.message || "未知錯誤"), "error");
+      }
+    }
+
+    function updatePushStatus(enabled) {
+      const el = document.getElementById("push-status");
+      const btn = document.getElementById("btn-enable-push");
+      if (enabled) {
+        el.className = "badge ok";
+        el.textContent = "推送：已啟用";
+        btn.style.display = "none";
+      } else {
+        el.className = "badge warn";
+        el.textContent = "推送：未啟用";
+        btn.style.display = "inline-flex";
+      }
+    }
+
+    // ========== CRUD ==========
+    async function loadReminders() {
+      const { data, error } = await supabase
+        .from("reminders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        showToast("載入失敗：" + error.message, "error");
+        return;
+      }
+
+      renderList(data || []);
+    }
+
+    function renderList(items) {
+      const list = document.getElementById("list");
+      if (!items.length) {
+        list.innerHTML = `
+          <div class="empty">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="" />
+            <div>還沒有任何提醒<br>先新增一個吧！</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = items
+        .map(
+          (r) => `
+        <div class="reminder-item ${r.is_active ? "" : "inactive"}" data-id="${r.id}">
+          <div class="reminder-title">${escapeHtml(r.title)}</div>
+          ${r.body ? `<div style="font-size:0.9rem;color:var(--muted)">${escapeHtml(r.body)}</div>` : ""}
+          <div class="reminder-meta">
+            <span>${formatInterval(r.interval_type, r.interval_value)}</span>
+            <span>下次：${formatTime(r.next_trigger_at)}</span>
+            ${r.last_triggered_at ? `<span>上次：${formatTime(r.last_triggered_at)}</span>` : ""}
+          </div>
+          <div class="reminder-actions">
+            <div class="toggle ${r.is_active ? "on" : ""}" data-action="toggle" title="啟用/停用"></div>
+            <button class="btn-danger" data-action="delete">刪除</button>
+          </div>
+        </div>`
+        )
+        .join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function addReminder() {
+      const title = document.getElementById("title").value.trim();
+      const body = document.getElementById("body").value.trim();
+      const intervalValue = parseInt(document.getElementById("interval-value").value, 10);
+      const intervalType = document.getElementById("interval-type").value;
+
+      if (!title) {
+        showToast("請輸入標題", "error");
+        return;
+      }
+      if (!intervalValue || intervalValue < 1) {
+        showToast("間隔必須大於 0", "error");
+        return;
+      }
+
+      // 計算第一次觸發時間
+      let ms = 0;
+      if (intervalType === "minutes") ms = intervalValue * 60 * 1000;
+      else if (intervalType === "hours") ms = intervalValue * 60 * 60 * 1000;
+      else ms = intervalValue * 24 * 60 * 60 * 1000;
+
+      const next = new Date(Date.now() + ms).toISOString();
+
+      const { error } = await supabase.from("reminders").insert({
+        title,
+        body,
+        interval_type: intervalType,
+        interval_value: intervalValue,
+        next_trigger_at: next,
+        is_active: true,
+      });
+
+      if (error) {
+        showToast("新增失敗：" + error.message, "error");
+        return;
+      }
+
+      document.getElementById("title").value = "";
+      document.getElementById("body").value = "";
+      showToast("已加入提醒");
+      loadReminders();
+    }
+
+    async function toggleReminder(id, currentActive) {
+      const { error } = await supabase
+        .from("reminders")
+        .update({ is_active: !currentActive })
+        .eq("id", id);
+
+      if (error) {
+        showToast("更新失敗", "error");
+        return;
+      }
+      showToast(currentActive ? "已停用" : "已啟用");
+      loadReminders();
+    }
+
+    async function deleteReminder(id) {
+      if (!confirm("確定刪除這個提醒？")) return;
+      const { error } = await supabase.from("reminders").delete().eq("id", id);
+      if (error) {
+        showToast("刪除失敗", "error");
+        return;
+      }
+      showToast("已刪除");
+      loadReminders();
+    }
+
+    // ========== Events ==========
+    document.getElementById("btn-add").addEventListener("click", addReminder);
+    document.getElementById("btn-enable-push").addEventListener("click", enablePush);
+
+    document.getElementById("list").addEventListener("click", async (e) => {
+      const item = e.target.closest(".reminder-item");
+      if (!item) return;
+      const id = item.dataset.id;
+      const action = e.target.dataset.action || e.target.closest("[data-action]")?.dataset.action;
+
+      if (action === "toggle") {
+        const isOn = e.target.classList.contains("on") || e.target.closest(".toggle")?.classList.contains("on");
+        await toggleReminder(id, isOn);
+      } else if (action === "delete") {
+        await deleteReminder(id);
+      }
+    });
+
+    // ========== Init ==========
+    (async () => {
+      await registerServiceWorker();
+
+      // 檢查是否已有訂閱
+      if ("serviceWorker" in navigator && "PushManager" in window) {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        updatePushStatus(!!sub);
+      }
+
+      await loadReminders();
+    })();
+  </script>
+</body>
+</html>
