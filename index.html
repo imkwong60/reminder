@@ -571,7 +571,7 @@
       else if (intervalType === "hours") ms = intervalValue * 60 * 60 * 1000;
       else ms = intervalValue * 24 * 60 * 60 * 1000;
 
-      const next = new Date(Date.now() + ms).toISOString();
+      const next = new Date(Date.now()).toISOString();
 
       const { error } = await supabase.from("reminders").insert({
         title,
