@@ -1,6 +1,6 @@
 // 提醒本本 Service Worker
 
-const CACHE_NAME = "reminder-notebook-v1";
+const CACHE_NAME = "reminder-notebook-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
