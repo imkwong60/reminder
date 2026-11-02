@@ -15,8 +15,9 @@ self.addEventListener("push", (event) => {
   let data = {
     title: "提醒本本 🐻",
     body: "有新的提醒",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png",
-    badge: "https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png",
+    // 改為指向你上傳到 GitHub 的本地圖標
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
     tag: "reminder",
   };
 
