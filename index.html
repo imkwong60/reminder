@@ -252,7 +252,6 @@
       color: #fb923c;
     }
 
-    /* Floating Capsule / Pill Toast */
     #toast-container {
       position: fixed;
       bottom: 28px;
@@ -312,6 +311,23 @@
       font-size: 0.75rem;
       color: #555;
     }
+
+    .quiet-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .quiet-row > div {
+      flex: 1;
+    }
+
+    .quiet-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: -8px;
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -355,6 +371,23 @@
     <button id="btn-add" class="btn-primary">加入提醒</button>
   </div>
 
+  <!-- 勿擾時段 -->
+  <div class="card">
+    <h2>🌙 勿擾時段（睡眠時間）</h2>
+    <div class="quiet-row">
+      <div>
+        <label>開始時間</label>
+        <input id="quiet-start" type="time" value="23:00" />
+      </div>
+      <div>
+        <label>結束時間</label>
+        <input id="quiet-end" type="time" value="08:00" />
+      </div>
+    </div>
+    <div class="quiet-hint">這段時間內不會發送推送（以香港時間計算）</div>
+    <button id="btn-save-quiet" class="btn-secondary" style="width:100%">儲存勿擾時段</button>
+  </div>
+
   <!-- 提醒列表 -->
   <div class="card">
     <h2>📋 我的提醒</h2>
@@ -380,7 +413,7 @@
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ========== Toast (Floating Capsule) ==========
+    // ========== Toast ==========
     function showToast(message, type = "success") {
       const container = document.getElementById("toast-container");
       const el = document.createElement("div");
@@ -496,6 +529,47 @@
       }
     }
 
+    // ========== 勿擾時段 ==========
+    async function loadQuietHours() {
+      const { data, error } = await supabase
+        .from("settings")
+        .select("key, value")
+        .in("key", ["quiet_start", "quiet_end"]);
+
+      if (error) {
+        console.error("Load quiet hours failed", error);
+        return;
+      }
+
+      const map = {};
+      (data || []).forEach(r => map[r.key] = r.value);
+
+      if (map.quiet_start) document.getElementById("quiet-start").value = map.quiet_start;
+      if (map.quiet_end) document.getElementById("quiet-end").value = map.quiet_end;
+    }
+
+    async function saveQuietHours() {
+      const start = document.getElementById("quiet-start").value;
+      const end = document.getElementById("quiet-end").value;
+
+      if (!start || !end) {
+        showToast("請填寫開始與結束時間", "error");
+        return;
+      }
+
+      const { error } = await supabase.from("settings").upsert([
+        { key: "quiet_start", value: start },
+        { key: "quiet_end", value: end }
+      ]);
+
+      if (error) {
+        showToast("儲存失敗：" + error.message, "error");
+        return;
+      }
+
+      showToast(`勿擾時段已設定：${start} ~ ${end}`);
+    }
+
     // ========== CRUD ==========
     async function loadReminders() {
       const { data, error } = await supabase
@@ -565,13 +639,13 @@
         return;
       }
 
-      // 計算第一次觸發時間
+      // 計算第一次觸發時間（現在 + 間隔）
       let ms = 0;
       if (intervalType === "minutes") ms = intervalValue * 60 * 1000;
       else if (intervalType === "hours") ms = intervalValue * 60 * 60 * 1000;
       else ms = intervalValue * 24 * 60 * 60 * 1000;
 
-      const next = new Date(Date.now()).toISOString();
+      const next = new Date(Date.now() + ms).toISOString();
 
       const { error } = await supabase.from("reminders").insert({
         title,
@@ -621,6 +695,7 @@
     // ========== Events ==========
     document.getElementById("btn-add").addEventListener("click", addReminder);
     document.getElementById("btn-enable-push").addEventListener("click", enablePush);
+    document.getElementById("btn-save-quiet").addEventListener("click", saveQuietHours);
 
     document.getElementById("list").addEventListener("click", async (e) => {
       const item = e.target.closest(".reminder-item");
@@ -640,13 +715,13 @@
     (async () => {
       await registerServiceWorker();
 
-      // 檢查是否已有訂閱
       if ("serviceWorker" in navigator && "PushManager" in window) {
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.getSubscription();
         updatePushStatus(!!sub);
       }
 
+      await loadQuietHours();
       await loadReminders();
     })();
   </script>
