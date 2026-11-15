@@ -2,25 +2,39 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#e94560" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#F5F0E8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="提醒本本" />
   <title>提醒本本</title>
-<link rel="icon" href="./icon-192.png" type="image/png" />
-<link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="icon" href="./icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
   <link rel="manifest" href="./manifest.json" />
   <style>
     :root {
-      --bg: #0f0f1a;
-      --card: #1a1a2e;
-      --accent: #e94560;
-      --accent-soft: #ff6b8a;
-      --text: #eaeaea;
-      --muted: #a0a0b8;
-      --success: #4ade80;
-      --border: #2a2a40;
-      --radius: 16px;
+      --bg: #F5F0E8;
+      --bg-elevated: #FFFCFA;
+      --card: rgba(255, 252, 248, 0.72);
+      --card-border: rgba(180, 150, 120, 0.18);
+      --card-highlight: rgba(255, 255, 255, 0.7);
+      --accent: #E83A5C;
+      --accent-soft: #D63A58;
+      --accent-glow: rgba(232, 58, 92, 0.22);
+      --text: #2C2A28;
+      --text-secondary: #6B6560;
+      --muted: #9A948C;
+      --success: #34C759;
+      --danger: #FF3B30;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --radius-pill: 9999px;
+      --blur: 22px;
+      --nav-height: 64px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
 
     * {
@@ -28,147 +42,269 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html, body {
+      height: 100%;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", "Noto Sans TC", "PingFang TC", "Helvetica Neue", sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100dvh;
-      padding: 16px;
-      padding-bottom: 100px;
-      line-height: 1.5;
+      line-height: 1.45;
+      overflow-x: hidden;
+      padding-top: var(--safe-top);
+      padding-left: var(--safe-left);
+      padding-right: var(--safe-right);
     }
 
+    /* Soft warm background wash */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% -15%, rgba(255, 200, 180, 0.28), transparent 60%),
+        radial-gradient(ellipse 70% 45% at 100% 40%, rgba(255, 230, 200, 0.18), transparent),
+        radial-gradient(ellipse 55% 35% at 0% 85%, rgba(255, 210, 190, 0.14), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px);
+    }
+
+    /* ========== Header ========== */
     .header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-      padding-top: env(safe-area-inset-top);
+      gap: 14px;
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(245, 240, 232, 0.78);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border-bottom: 1px solid rgba(180, 150, 120, 0.12);
     }
 
     .header img {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
       object-fit: cover;
-      background: #fff;
+      box-shadow: 0 4px 14px rgba(120, 90, 60, 0.18);
     }
 
     .header h1 {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text);
     }
 
     .header .sub {
-      font-size: 0.8rem;
-      color: var(--muted);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* ========== Glass Card ========== */
+    .glass {
+      background: var(--card);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow:
+        0 8px 28px rgba(120, 90, 60, 0.08),
+        0 2px 8px rgba(120, 90, 60, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
     }
 
     .card {
-      background: var(--card);
-      border-radius: var(--radius);
       padding: 20px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
+      margin: 0 16px 16px;
     }
 
-    .card h2 {
-      font-size: 1rem;
-      margin-bottom: 16px;
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
       color: var(--accent-soft);
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
     }
 
+    /* ========== Form ========== */
     label {
       display: block;
-      font-size: 0.85rem;
-      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
       margin-bottom: 6px;
+      letter-spacing: 0.01em;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #12121f;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(160, 140, 120, 0.22);
+      background: rgba(255, 255, 255, 0.7);
       color: var(--text);
       font-size: 1rem;
       margin-bottom: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+      font-family: inherit;
+      appearance: none;
+      -webkit-appearance: none;
     }
 
     input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
+      border-color: rgba(232, 58, 92, 0.5);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input::placeholder {
+      color: var(--muted);
     }
 
     .row {
       display: flex;
-      gap: 10px;
+      gap: 12px;
     }
 
     .row > * {
       flex: 1;
     }
 
-    button {
+    /* ========== Buttons – Pill ========== */
+    button, .btn {
       border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-size: 1rem;
+      border-radius: var(--radius-pill);
+      padding: 13px 22px;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.15s, opacity 0.15s;
+      transition: transform 0.18s ease, opacity 0.18s ease, background 0.2s ease, box-shadow 0.2s ease;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      letter-spacing: -0.01em;
     }
 
-    button:active {
-      transform: scale(0.97);
+    button:active, .btn:active {
+      transform: scale(0.96);
     }
 
     .btn-primary {
-      background: var(--accent);
+      background: linear-gradient(180deg, #F04E6E 0%, var(--accent) 100%);
       color: white;
       width: 100%;
+      box-shadow: 0 4px 18px var(--accent-glow);
     }
 
     .btn-primary:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
+      transform: none;
     }
 
     .btn-secondary {
-      background: #2a2a40;
+      background: rgba(255, 255, 255, 0.85);
       color: var(--text);
+      border: 1px solid rgba(160, 140, 120, 0.22);
+      box-shadow: 0 2px 8px rgba(120, 90, 60, 0.06);
+    }
+
+    .btn-secondary:hover {
+      background: #fff;
     }
 
     .btn-danger {
       background: transparent;
-      color: #f87171;
-      border: 1px solid #f8717133;
-      padding: 6px 12px;
+      color: var(--danger);
+      border: 1px solid rgba(255, 59, 48, 0.28);
+      padding: 8px 16px;
       font-size: 0.85rem;
     }
 
     .btn-sm {
-      padding: 8px 14px;
-      font-size: 0.9rem;
+      padding: 9px 16px;
+      font-size: 0.88rem;
     }
 
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      padding: 8px 12px;
+    }
+
+    /* ========== Status ========== */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 16px 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(160, 140, 120, 0.18);
+      color: var(--text-secondary);
+    }
+
+    .badge.ok {
+      background: rgba(52, 199, 89, 0.12);
+      color: #248A3D;
+      border-color: rgba(52, 199, 89, 0.28);
+    }
+
+    .badge.warn {
+      background: rgba(255, 149, 0, 0.12);
+      color: #C76A00;
+      border-color: rgba(255, 149, 0, 0.28);
+    }
+
+    /* ========== Reminder List ========== */
     .reminder-item {
-      background: #12121f;
-      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: 16px;
       padding: 16px;
       margin-bottom: 12px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(160, 140, 120, 0.14);
       display: flex;
       flex-direction: column;
       gap: 8px;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 2px 10px rgba(120, 90, 60, 0.05);
     }
 
     .reminder-item.inactive {
@@ -178,30 +314,40 @@
     .reminder-title {
       font-weight: 600;
       font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .reminder-body {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
     .reminder-meta {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 16px;
+      gap: 6px 14px;
     }
 
     .reminder-actions {
       display: flex;
-      gap: 8px;
-      margin-top: 4px;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
     }
 
+    /* Toggle switch */
     .toggle {
       position: relative;
-      width: 44px;
-      height: 24px;
-      background: #333;
-      border-radius: 12px;
+      width: 48px;
+      height: 28px;
+      background: rgba(160, 140, 120, 0.28);
+      border-radius: var(--radius-pill);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.25s ease;
+      flex-shrink: 0;
     }
 
     .toggle.on {
@@ -213,51 +359,217 @@
       position: absolute;
       top: 3px;
       left: 3px;
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
       background: white;
       border-radius: 50%;
-      transition: transform 0.2s;
+      transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
     }
 
     .toggle.on::after {
       transform: translateX(20px);
     }
 
-    .status-bar {
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+
+    .empty img {
+      width: 96px;
+      height: 96px;
+      opacity: 0.85;
+      margin-bottom: 16px;
+      border-radius: 20px;
+    }
+
+    .empty p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* ========== Quiet hours ========== */
+    .quiet-row {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      background: #2a2a40;
+    .quiet-row > div {
+      flex: 1;
     }
 
-    .badge.ok {
-      background: #14532d44;
-      color: var(--success);
+    .quiet-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: -6px;
+      margin-bottom: 16px;
     }
 
-    .badge.warn {
-      background: #7c2d1244;
-      color: #fb923c;
-    }
-
-    #toast-container {
+    /* ========== Bottom Pill Navigation ========== */
+    .bottom-nav {
       position: fixed;
-      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 9999;
+      bottom: calc(12px + var(--safe-bottom));
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px;
+      background: rgba(255, 252, 248, 0.82);
+      backdrop-filter: blur(28px) saturate(1.3);
+      -webkit-backdrop-filter: blur(28px) saturate(1.3);
+      border: 1px solid rgba(180, 150, 120, 0.2);
+      border-radius: var(--radius-pill);
+      box-shadow:
+        0 10px 36px rgba(120, 90, 60, 0.12),
+        0 2px 10px rgba(120, 90, 60, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      width: min(340px, calc(100% - 32px));
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 8px;
+      border-radius: var(--radius-pill);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.25s ease, background 0.25s ease, transform 0.2s ease;
+      background: transparent;
+      border: none;
+      position: relative;
+    }
+
+    .nav-item .icon {
+      font-size: 1.25rem;
+      line-height: 1;
+      transition: transform 0.25s ease;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      background: rgba(232, 58, 92, 0.12);
+    }
+
+    .nav-item.active .icon {
+      transform: scale(1.08);
+    }
+
+    .nav-item:active {
+      transform: scale(0.94);
+    }
+
+    /* ========== Views ========== */
+    .view {
+      display: none;
+      animation: viewIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes viewIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========== Modal (Glass + Slide) ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(80, 60, 40, 0.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      padding: 0 12px calc(12px + var(--safe-bottom));
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 252, 248, 0.92);
+      backdrop-filter: blur(32px) saturate(1.4);
+      -webkit-backdrop-filter: blur(32px) saturate(1.4);
+      border: 1px solid rgba(180, 150, 120, 0.22);
+      border-radius: 24px 24px 20px 20px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 -8px 40px rgba(100, 70, 40, 0.15);
+      transform: translateY(110%);
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .modal-overlay.show .modal {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(160, 140, 120, 0.35);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+
+    .modal h3 {
+      font-size: 1.15rem;
+      font-weight: 650;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .modal p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+    }
+
+    /* ========== Toast ========== */
+    #toast-container {
+      position: fixed;
+      bottom: calc(var(--nav-height) + var(--safe-bottom) + 28px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -268,21 +580,24 @@
     }
 
     .toast {
-      background: #1f1f35;
+      background: rgba(45, 42, 40, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       color: white;
-      padding: 12px 22px;
-      border-radius: 999px;
+      padding: 13px 22px;
+      border-radius: var(--radius-pill);
       font-size: 0.9rem;
-      font-weight: 500;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-      border: 1px solid #3a3a55;
+      font-weight: 550;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       opacity: 0;
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: translateY(24px) scale(0.94);
+      transition: all 0.38s cubic-bezier(0.22, 1, 0.36, 1);
       pointer-events: auto;
       display: flex;
       align-items: center;
       gap: 8px;
+      max-width: 92vw;
     }
 
     .toast.show {
@@ -290,116 +605,151 @@
       transform: translateY(0) scale(1);
     }
 
-    .toast.success { border-color: #4ade8055; }
-    .toast.error { border-color: #f8717155; }
+    .toast.success {
+      border-color: rgba(52, 199, 89, 0.4);
+    }
 
-    .empty {
+    .toast.error {
+      border-color: rgba(255, 59, 48, 0.45);
+    }
+
+    /* Footer note */
+    .footer-note {
       text-align: center;
-      padding: 40px 20px;
+      font-size: 0.7rem;
       color: var(--muted);
+      padding: 8px 16px 24px;
     }
 
-    .empty img {
-      width: 80px;
-      opacity: 0.6;
-      margin-bottom: 12px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 0.75rem;
-      color: #555;
-    }
-
-    .quiet-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-    }
-
-    .quiet-row > div {
-      flex: 1;
-    }
-
-    .quiet-hint {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: -8px;
-      margin-bottom: 14px;
+    /* Select arrow */
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239A948C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
     }
   </style>
+
 </head>
 <body>
-  <div class="header">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="Kumamon" />
-    <div>
-      <h1>提醒本本</h1>
-      <div class="sub">個人推送提醒 · 分鐘 / 小時 / 天</div>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <img src="./icon-192.png" alt="提醒本本" width="44" height="44" />
+      <div>
+        <h1>提醒本本</h1>
+        <div class="sub">個人推送提醒 · 分鐘 / 小時 / 天 / 年</div>
+      </div>
+    </header>
+
+    <!-- Views -->
+    <main>
+      <!-- 列表 View -->
+      <section id="view-list" class="view active">
+        <div class="status-bar">
+          <div id="push-status" class="badge warn">推送：未啟用</div>
+          <button id="btn-enable-push" class="btn btn-secondary btn-sm">啟用推送</button>
+        </div>
+
+        <div class="card glass">
+          <div class="card-title">📋 我的提醒</div>
+          <div id="list">
+            <div class="empty">
+              <img src="./icon-192.png" alt="" />
+              <p>還沒有任何提醒<br>點下方「新增」開始吧</p>
+            </div>
+          </div>
+        </div>
+        <p class="footer-note">資料安全存於你的 Supabase</p>
+      </section>
+
+      <!-- 新增 View -->
+      <section id="view-add" class="view">
+        <div class="card glass">
+          <div class="card-title">＋ 新增提醒</div>
+          <label for="title">標題</label>
+          <input id="title" type="text" placeholder="例如：喝水、休息眼睛、吃藥…" maxlength="80" autocomplete="off" />
+
+          <label for="body">補充說明（可選）</label>
+          <input id="body" type="text" placeholder="可留空" maxlength="120" autocomplete="off" />
+
+          <div class="row">
+            <div>
+              <label for="interval-value">每隔</label>
+              <input id="interval-value" type="number" min="1" value="30" inputmode="numeric" />
+            </div>
+            <div>
+              <label for="interval-type">單位</label>
+              <select id="interval-type">
+                <option value="minutes">分鐘</option>
+                <option value="hours">小時</option>
+                <option value="days">天</option>
+                <option value="years">年</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="btn-add" class="btn btn-primary">加入提醒</button>
+        </div>
+      </section>
+
+      <!-- 設定 View -->
+      <section id="view-settings" class="view">
+        <div class="card glass">
+          <div class="card-title">🌙 勿擾時段（睡眠時間）</div>
+          <div class="quiet-row">
+            <div>
+              <label for="quiet-start">開始時間</label>
+              <input id="quiet-start" type="time" value="23:00" />
+            </div>
+            <div>
+              <label for="quiet-end">結束時間</label>
+              <input id="quiet-end" type="time" value="08:00" />
+            </div>
+          </div>
+          <div class="quiet-hint">這段時間內不會發送推送（以香港時間計算）</div>
+          <button id="btn-save-quiet" class="btn btn-secondary" style="width:100%">儲存勿擾時段</button>
+        </div>
+
+        <div class="card glass" style="margin-top:0">
+          <div class="card-title">🔔 推送狀態</div>
+          <div class="status-bar" style="margin:0">
+            <div id="push-status-2" class="badge warn">推送：未啟用</div>
+            <button id="btn-enable-push-2" class="btn btn-secondary btn-sm">啟用推送通知</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bottom Pill Nav -->
+  <nav class="bottom-nav" role="tablist">
+    <button class="nav-item active" data-view="list" role="tab" aria-selected="true">
+      <span class="icon">📋</span>
+      <span>列表</span>
+    </button>
+    <button class="nav-item" data-view="add" role="tab" aria-selected="false">
+      <span class="icon">＋</span>
+      <span>新增</span>
+    </button>
+    <button class="nav-item" data-view="settings" role="tab" aria-selected="false">
+      <span class="icon">⚙️</span>
+      <span>設定</span>
+    </button>
+  </nav>
+
+  <!-- Confirm Modal -->
+  <div id="modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="modal-title">
+      <div class="modal-handle"></div>
+      <h3 id="modal-title">確定刪除？</h3>
+      <p id="modal-desc">此操作無法復原，提醒將永久刪除。</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn-secondary">取消</button>
+        <button id="modal-confirm" class="btn btn-primary" style="background:linear-gradient(180deg,#ff6961,#ff453a);box-shadow:0 4px 16px rgba(255,69,58,0.35)">刪除</button>
+      </div>
     </div>
   </div>
-
-  <div class="status-bar">
-    <div id="push-status" class="badge warn">推送：未啟用</div>
-    <button id="btn-enable-push" class="btn-secondary btn-sm">啟用推送通知</button>
-  </div>
-
-  <!-- 新增提醒 -->
-  <div class="card">
-    <h2>＋ 新增提醒</h2>
-    <label>標題</label>
-    <input id="title" type="text" placeholder="例如：喝水、休息眼睛、吃藥…" maxlength="80" />
-
-    <label>補充說明（可選）</label>
-    <input id="body" type="text" placeholder="可留空" maxlength="120" />
-
-    <div class="row">
-      <div>
-        <label>每隔</label>
-        <input id="interval-value" type="number" min="1" value="30" />
-      </div>
-      <div>
-        <label>單位</label>
-        <select id="interval-type">
-          <option value="minutes">分鐘</option>
-          <option value="hours">小時</option>
-          <option value="days">天</option>
-        </select>
-      </div>
-    </div>
-
-    <button id="btn-add" class="btn-primary">加入提醒</button>
-  </div>
-
-  <!-- 勿擾時段 -->
-  <div class="card">
-    <h2>🌙 勿擾時段（睡眠時間）</h2>
-    <div class="quiet-row">
-      <div>
-        <label>開始時間</label>
-        <input id="quiet-start" type="time" value="23:00" />
-      </div>
-      <div>
-        <label>結束時間</label>
-        <input id="quiet-end" type="time" value="08:00" />
-      </div>
-    </div>
-    <div class="quiet-hint">這段時間內不會發送推送（以香港時間計算）</div>
-    <button id="btn-save-quiet" class="btn-secondary" style="width:100%">儲存勿擾時段</button>
-  </div>
-
-  <!-- 提醒列表 -->
-  <div class="card">
-    <h2>📋 我的提醒</h2>
-    <div id="list">
-      <div class="empty">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="" />
-        <div>還沒有任何提醒<br>先新增一個吧！</div>
-      </div>
-    </div>
-  </div>
-
-  <footer>提醒本本 · 個人使用 · 資料存於你的 Supabase</footer>
 
   <div id="toast-container"></div>
 
@@ -420,10 +770,12 @@
       el.className = `toast ${type}`;
       el.innerHTML = type === "success" ? `✓ ${message}` : `⚠ ${message}`;
       container.appendChild(el);
-      requestAnimationFrame(() => el.classList.add("show"));
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => el.classList.add("show"));
+      });
       setTimeout(() => {
         el.classList.remove("show");
-        setTimeout(() => el.remove(), 350);
+        setTimeout(() => el.remove(), 380);
       }, 2600);
     }
 
@@ -440,8 +792,8 @@
     }
 
     function formatInterval(type, value) {
-      const map = { minutes: "分鐘", hours: "小時", days: "天" };
-      return `每 ${value} ${map[type]}`;
+      const map = { minutes: "分鐘", hours: "小時", days: "天", years: "年" };
+      return `每 ${value} ${map[type] || type}`;
     }
 
     function formatTime(iso) {
@@ -454,6 +806,84 @@
         minute: "2-digit",
       });
     }
+
+    function calcNextTrigger(type, value) {
+      const next = new Date();
+      if (type === "minutes") {
+        next.setMinutes(next.getMinutes() + value);
+      } else if (type === "hours") {
+        next.setHours(next.getHours() + value);
+      } else if (type === "days") {
+        next.setDate(next.getDate() + value);
+      } else if (type === "years") {
+        next.setFullYear(next.getFullYear() + value);
+      } else {
+        next.setMinutes(next.getMinutes() + value);
+      }
+      return next.toISOString();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ========== Navigation ==========
+    const views = {
+      list: document.getElementById("view-list"),
+      add: document.getElementById("view-add"),
+      settings: document.getElementById("view-settings"),
+    };
+
+    function switchView(name) {
+      Object.keys(views).forEach((k) => {
+        views[k].classList.toggle("active", k === name);
+      });
+      document.querySelectorAll(".nav-item").forEach((btn) => {
+        const isActive = btn.dataset.view === name;
+        btn.classList.toggle("active", isActive);
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+    }
+
+    document.querySelectorAll(".nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    // ========== Modal ==========
+    let pendingDeleteId = null;
+
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modalConfirm = document.getElementById("modal-confirm");
+    const modalCancel = document.getElementById("modal-cancel");
+
+    function openDeleteModal(id, title) {
+      pendingDeleteId = id;
+      document.getElementById("modal-title").textContent = "確定刪除？";
+      document.getElementById("modal-desc").textContent = `「${title}」將永久刪除，無法復原。`;
+      modalOverlay.classList.add("show");
+      modalOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove("show");
+      modalOverlay.setAttribute("aria-hidden", "true");
+      pendingDeleteId = null;
+    }
+
+    modalCancel.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+    modalConfirm.addEventListener("click", async () => {
+      if (!pendingDeleteId) return;
+      const id = pendingDeleteId;
+      closeModal();
+      await deleteReminder(id);
+    });
 
     // ========== Push ==========
     async function registerServiceWorker() {
@@ -516,17 +946,28 @@
     }
 
     function updatePushStatus(enabled) {
-      const el = document.getElementById("push-status");
-      const btn = document.getElementById("btn-enable-push");
-      if (enabled) {
-        el.className = "badge ok";
-        el.textContent = "推送：已啟用";
-        btn.style.display = "none";
-      } else {
-        el.className = "badge warn";
-        el.textContent = "推送：未啟用";
-        btn.style.display = "inline-flex";
-      }
+      const els = [
+        document.getElementById("push-status"),
+        document.getElementById("push-status-2"),
+      ];
+      const btns = [
+        document.getElementById("btn-enable-push"),
+        document.getElementById("btn-enable-push-2"),
+      ];
+      els.forEach((el) => {
+        if (!el) return;
+        if (enabled) {
+          el.className = "badge ok";
+          el.textContent = "推送：已啟用";
+        } else {
+          el.className = "badge warn";
+          el.textContent = "推送：未啟用";
+        }
+      });
+      btns.forEach((btn) => {
+        if (!btn) return;
+        btn.style.display = enabled ? "none" : "inline-flex";
+      });
     }
 
     // ========== 勿擾時段 ==========
@@ -542,7 +983,7 @@
       }
 
       const map = {};
-      (data || []).forEach(r => map[r.key] = r.value);
+      (data || []).forEach((r) => (map[r.key] = r.value));
 
       if (map.quiet_start) document.getElementById("quiet-start").value = map.quiet_start;
       if (map.quiet_end) document.getElementById("quiet-end").value = map.quiet_end;
@@ -559,7 +1000,7 @@
 
       const { error } = await supabase.from("settings").upsert([
         { key: "quiet_start", value: start },
-        { key: "quiet_end", value: end }
+        { key: "quiet_end", value: end },
       ]);
 
       if (error) {
@@ -590,8 +1031,8 @@
       if (!items.length) {
         list.innerHTML = `
           <div class="empty">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Kumamon.png" alt="" />
-            <div>還沒有任何提醒<br>先新增一個吧！</div>
+            <img src="./icon-192.png" alt="" />
+            <p>還沒有任何提醒<br>點下方「新增」開始吧</p>
           </div>`;
         return;
       }
@@ -601,27 +1042,19 @@
           (r) => `
         <div class="reminder-item ${r.is_active ? "" : "inactive"}" data-id="${r.id}">
           <div class="reminder-title">${escapeHtml(r.title)}</div>
-          ${r.body ? `<div style="font-size:0.9rem;color:var(--muted)">${escapeHtml(r.body)}</div>` : ""}
+          ${r.body ? `<div class="reminder-body">${escapeHtml(r.body)}</div>` : ""}
           <div class="reminder-meta">
             <span>${formatInterval(r.interval_type, r.interval_value)}</span>
             <span>下次：${formatTime(r.next_trigger_at)}</span>
             ${r.last_triggered_at ? `<span>上次：${formatTime(r.last_triggered_at)}</span>` : ""}
           </div>
           <div class="reminder-actions">
-            <div class="toggle ${r.is_active ? "on" : ""}" data-action="toggle" title="啟用/停用"></div>
+            <div class="toggle ${r.is_active ? "on" : ""}" data-action="toggle" title="啟用/停用" role="switch" aria-checked="${r.is_active}"></div>
             <button class="btn-danger" data-action="delete">刪除</button>
           </div>
         </div>`
         )
         .join("");
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
     }
 
     async function addReminder() {
@@ -639,13 +1072,7 @@
         return;
       }
 
-      // 計算第一次觸發時間（現在 + 間隔）
-      let ms = 0;
-      if (intervalType === "minutes") ms = intervalValue * 60 * 1000;
-      else if (intervalType === "hours") ms = intervalValue * 60 * 60 * 1000;
-      else ms = intervalValue * 24 * 60 * 60 * 1000;
-
-      const next = new Date(Date.now() + ms).toISOString();
+      const next = calcNextTrigger(intervalType, intervalValue);
 
       const { error } = await supabase.from("reminders").insert({
         title,
@@ -664,6 +1091,7 @@
       document.getElementById("title").value = "";
       document.getElementById("body").value = "";
       showToast("已加入提醒");
+      switchView("list");
       loadReminders();
     }
 
@@ -682,7 +1110,6 @@
     }
 
     async function deleteReminder(id) {
-      if (!confirm("確定刪除這個提醒？")) return;
       const { error } = await supabase.from("reminders").delete().eq("id", id);
       if (error) {
         showToast("刪除失敗", "error");
@@ -695,6 +1122,7 @@
     // ========== Events ==========
     document.getElementById("btn-add").addEventListener("click", addReminder);
     document.getElementById("btn-enable-push").addEventListener("click", enablePush);
+    document.getElementById("btn-enable-push-2").addEventListener("click", enablePush);
     document.getElementById("btn-save-quiet").addEventListener("click", saveQuietHours);
 
     document.getElementById("list").addEventListener("click", async (e) => {
@@ -704,10 +1132,12 @@
       const action = e.target.dataset.action || e.target.closest("[data-action]")?.dataset.action;
 
       if (action === "toggle") {
-        const isOn = e.target.classList.contains("on") || e.target.closest(".toggle")?.classList.contains("on");
+        const toggleEl = e.target.closest(".toggle") || e.target;
+        const isOn = toggleEl.classList.contains("on");
         await toggleReminder(id, isOn);
       } else if (action === "delete") {
-        await deleteReminder(id);
+        const title = item.querySelector(".reminder-title")?.textContent || "這個提醒";
+        openDeleteModal(id, title);
       }
     });
 
@@ -716,9 +1146,13 @@
       await registerServiceWorker();
 
       if ("serviceWorker" in navigator && "PushManager" in window) {
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        updatePushStatus(!!sub);
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          updatePushStatus(!!sub);
+        } catch (e) {
+          console.warn(e);
+        }
       }
 
       await loadQuietHours();
